@@ -32,3 +32,8 @@ output "public_route_table_id" {
   description = "ID of the public route table."
   value       = aws_route_table.public.id
 }
+
+output "kubernetes_security_group_id" {
+  description = "Security group ID used by Kubernetes nodes."
+  value       = aws_security_group.kubernetes.id
+}
