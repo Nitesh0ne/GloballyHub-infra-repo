@@ -46,7 +46,7 @@ variable "subnet_cidrs" {
 variable "instance_type" {
   description = "EC2 instance type for all Kubernetes nodes."
   type        = string
-  default     = "t3.medium"
+  default     = "t3.small"
 }
 
 variable "key_name" {

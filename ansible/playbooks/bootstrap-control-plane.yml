@@ -1,0 +1,22 @@
+---
+- name: Bootstrap Canonical Kubernetes control plane
+  hosts: k8s_control_plane
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Bootstrap Kubernetes cluster
+      ansible.builtin.command:
+        cmd: k8s bootstrap
+      register: bootstrap_result
+      changed_when: true
+
+    - name: Wait for Kubernetes cluster to become ready
+      ansible.builtin.command:
+        cmd: k8s status --wait-ready --timeout 3m
+      register: k8s_status
+      changed_when: false
+
+    - name: Display Kubernetes status
+      ansible.builtin.debug:
+        var: k8s_status.stdout

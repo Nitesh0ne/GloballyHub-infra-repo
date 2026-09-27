@@ -1,0 +1,15 @@
+[k8s_control_plane]
+control ansible_host=CONTROL_PUBLIC_IP
+
+[k8s_workers]
+worker1 ansible_host=WORKER1_PUBLIC_IP
+worker2 ansible_host=WORKER2_PUBLIC_IP
+
+[k8s:children]
+k8s_control_plane
+k8s_workers
+
+[k8s:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/YOUR_KEY_FILE.pem
+ansible_python_interpreter=/usr/bin/python3

@@ -2,6 +2,8 @@
 .terraform/
 *.tfstate
 *.tfstate.*
+terraform.tfvars
+
 crash.log
 crash.*.log
 *.tfvars
@@ -19,6 +21,7 @@ terraform.rc
 *.retry
 .ansible/
 ansible.log
+inventory.ini
 
 # Kubernetes
 *.kubeconfig
