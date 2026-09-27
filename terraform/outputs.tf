@@ -37,3 +37,37 @@ output "kubernetes_security_group_id" {
   description = "Security group ID used by Kubernetes nodes."
   value       = aws_security_group.kubernetes.id
 }
+
+
+
+output "kubernetes_instance_ids" {
+  description = "Instance IDs of the Kubernetes nodes."
+  value = {
+    for key, instance in aws_instance.kubernetes :
+    key => instance.id
+  }
+}
+
+output "kubernetes_node_public_ips" {
+  description = "Public IP addresses of the Kubernetes nodes."
+  value = {
+    for key, instance in aws_instance.kubernetes :
+    key => instance.public_ip
+  }
+}
+
+output "kubernetes_node_private_ips" {
+  description = "Private IP addresses of the Kubernetes nodes."
+  value = {
+    for key, instance in aws_instance.kubernetes :
+    key => instance.private_ip
+  }
+}
+
+output "kubernetes_node_names" {
+  description = "Names of the Kubernetes nodes."
+  value = {
+    for key, instance in aws_instance.kubernetes :
+    key => instance.tags.Name
+  }
+}
