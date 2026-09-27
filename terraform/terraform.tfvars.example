@@ -1,0 +1,30 @@
+aws_region   = "ap-south-1"
+project_name = "globallyhub-devops"
+environment  = "dev"
+
+vpc_cidr = "10.0.0.0/16"
+
+availability_zones = [
+  "ap-south-1a",
+  "ap-south-1b",
+]
+
+subnet_cidrs = [
+  "10.0.1.0/24",
+  "10.0.2.0/24",
+  "10.0.3.0/24",
+]
+
+instance_type    = "t3.medium"
+root_volume_size = 30
+
+# Existing EC2 key pair in ap-south-1.
+key_name = "YOUR_EC2_KEY_PAIR_NAME"
+
+# Replace with your current public IP in CIDR notation.
+# Example: 203.0.113.10/32
+ssh_allowed_cidr            = "YOUR_PUBLIC_IP/32"
+kubernetes_api_allowed_cidr = "YOUR_PUBLIC_IP/32"
+
+# Optional: pin a specific Ubuntu 24.04 LTS AMI.
+# ubuntu_ami_id = ""
