@@ -4,9 +4,14 @@ kube-prometheus-stack:
 
   prometheus:
     enabled: true
+    prometheusSpec:
+      # Ensures Prometheus instance can be scheduled without requiring PVCs if no StorageClass exists
+      storageSpec: {}
 
   alertmanager:
     enabled: true
+    alertmanagerSpec:
+      storage: {}
 
 loki:
   deploymentMode: SingleBinary
@@ -45,10 +50,18 @@ loki:
   write:
     replicas: 0
 
+  # --- Cache Sub-chart Disables ---
   chunksCache:
     enabled: false
-
   resultsCache:
+    enabled: false
+
+  # Completely disable Memcached dependency charts
+  memcached:
+    enabled: false
+  memcachedChunks:
+    enabled: false
+  memcachedExporter:
     enabled: false
 
 alloy:
