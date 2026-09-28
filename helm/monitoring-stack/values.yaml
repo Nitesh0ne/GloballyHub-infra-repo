@@ -1,17 +1,16 @@
 kube-prometheus-stack:
   grafana:
     enabled: true
+    admin:
+      existingSecret: grafana-admin
+      userKey: admin-user
+      passwordKey: admin-password
 
   prometheus:
     enabled: true
-    prometheusSpec:
-      # Ensures Prometheus instance can be scheduled without requiring PVCs if no StorageClass exists
-      storageSpec: {}
 
   alertmanager:
     enabled: true
-    alertmanagerSpec:
-      storage: {}
 
 loki:
   deploymentMode: SingleBinary
