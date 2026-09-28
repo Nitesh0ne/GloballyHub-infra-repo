@@ -12,10 +12,10 @@ fullnameOverride: ""
 
 service:
   type: ClusterIP
-  port: 80
-  targetPort: 8080
+  port: 3000
+  targetPort: 3000
 
-containerPort: 8080
+containerPort: 3000
 
 ingress:
   enabled: true
@@ -27,6 +27,22 @@ ingress:
         - path: /
           pathType: Prefix
   tls: []
+
+database:
+  host: postgresql
+  port: 5432
+  existingSecret: globallyhub-db
+  nameKey: DB_NAME
+  usernameKey: DB_USERNAME
+  passwordKey: DB_PASSWORD
+  schemaKey: DB_SCHEMA
+
+application:
+  env: staging
+  existingSecret: globallyhub-app
+  cookieSecretKey: COOKIE_SECRET
+  superadminUsernameKey: SUPERADMIN_USERNAME
+  superadminPasswordKey: SUPERADMIN_PASSWORD
 
 resources:
   requests:

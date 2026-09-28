@@ -4,12 +4,15 @@ metadata:
   name: {{ include "globallyhub-application.fullname" . }}
   labels:
     {{- include "globallyhub-application.labels" . | nindent 4 }}
+
 spec:
   type: {{ .Values.service.type }}
+
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
+
   selector:
     {{- include "globallyhub-application.selectorLabels" . | nindent 4 }}

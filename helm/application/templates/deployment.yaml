@@ -6,13 +6,16 @@ metadata:
     {{- include "globallyhub-application.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+
   selector:
     matchLabels:
       {{- include "globallyhub-application.selectorLabels" . | nindent 6 }}
+
   template:
     metadata:
       labels:
         {{- include "globallyhub-application.selectorLabels" . | nindent 8 }}
+
     spec:
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
@@ -33,19 +36,78 @@ spec:
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
 
+          env:
+            - name: APP_ENV
+              value: {{ .Values.application.env | quote }}
+
+            - name: VENDURE_SERVER_PORT
+              value: {{ .Values.containerPort | quote }}
+
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+
+            - name: DB_PORT
+              value: {{ .Values.database.port | quote }}
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.nameKey }}
+
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.usernameKey }}
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.passwordKey }}
+
+            - name: DB_SCHEMA
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.schemaKey }}
+
+            - name: COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.application.existingSecret }}
+                  key: {{ .Values.application.cookieSecretKey }}
+
+            - name: SUPERADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.application.existingSecret }}
+                  key: {{ .Values.application.superadminUsernameKey }}
+
+            - name: SUPERADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.application.existingSecret }}
+                  key: {{ .Values.application.superadminPasswordKey }}
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
 
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
-            initialDelaySeconds: 20
+            initialDelaySeconds: 60
             periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3

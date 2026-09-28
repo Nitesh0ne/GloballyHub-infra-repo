@@ -1,0 +1,97 @@
+---
+- name: Install Helm and Argo CD
+  hosts: k8s_control_plane
+  become: true
+  gather_facts: true
+
+  vars:
+    argocd_chart_version: "10.9.2"
+    kubeconfig_path: "/home/ubuntu/.kube/config"
+
+  tasks:
+    - name: Install Helm
+      community.general.snap:
+        name: helm
+        classic: true
+        state: present
+
+    - name: Create kubeconfig directory
+      ansible.builtin.file:
+        path: /home/ubuntu/.kube
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0700"
+
+    - name: Generate Kubernetes kubeconfig
+      ansible.builtin.shell:
+        cmd: "k8s config > {{ kubeconfig_path }}"
+      no_log: true
+      changed_when: true
+
+    - name: Set kubeconfig ownership
+      ansible.builtin.file:
+        path: "{{ kubeconfig_path }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0600"
+
+    - name: Add Argo CD Helm repository
+      become_user: ubuntu
+      ansible.builtin.command:
+        cmd: helm repo add argo https://argoproj.github.io/argo-helm
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      register: argo_repo
+      changed_when: "'has been added' in argo_repo.stdout"
+      failed_when:
+        - argo_repo.rc != 0
+        - "'already exists' not in argo_repo.stderr"
+
+    - name: Update Helm repositories
+      become_user: ubuntu
+      ansible.builtin.command:
+        cmd: helm repo update
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      changed_when: false
+
+    - name: Create Argo CD namespace
+      become_user: ubuntu
+      ansible.builtin.command:
+        cmd: k8s kubectl create namespace argocd
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      register: argocd_namespace
+      changed_when: argocd_namespace.rc == 0
+      failed_when:
+        - argocd_namespace.rc != 0
+        - "'AlreadyExists' not in argocd_namespace.stderr"
+
+    - name: Install or upgrade Argo CD
+      become_user: ubuntu
+      ansible.builtin.command:
+        cmd: >
+          helm upgrade --install argocd argo/argo-cd
+          --namespace argocd
+          --create-namespace
+          --version {{ argocd_chart_version }}
+          --wait
+          --timeout 10m
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      register: argocd_install
+      changed_when: true
+
+    - name: Verify Argo CD pods
+      become_user: ubuntu
+      ansible.builtin.command:
+        cmd: k8s kubectl get pods -n argocd
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      register: argocd_pods
+      changed_when: false
+
+    - name: Display Argo CD pods
+      ansible.builtin.debug:
+        var: argocd_pods.stdout

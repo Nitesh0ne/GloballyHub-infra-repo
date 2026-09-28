@@ -1,0 +1,39 @@
+---
+- name: Join Canonical Kubernetes worker nodes
+  hosts: k8s_workers
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Check whether worker is already part of the cluster
+      ansible.builtin.command:
+        cmd: k8s status
+      register: k8s_status
+      changed_when: false
+      failed_when: false
+
+    - name: Generate worker join token on control plane
+      ansible.builtin.command:
+        cmd: k8s get-join-token --worker
+      delegate_to: "{{ groups['k8s_control_plane'][0] }}"
+      become: true
+      register: worker_join_token
+      changed_when: false
+      run_once: true
+      no_log: true
+
+    - name: Join worker to Kubernetes cluster
+      ansible.builtin.command:
+        cmd: "k8s join-cluster --timeout=10m {{ worker_join_token.stdout }}"
+      when: "'not part of a Kubernetes cluster' in k8s_status.stdout"
+      no_log: true
+
+    - name: Wait for Kubernetes worker to become ready
+      ansible.builtin.command:
+        cmd: k8s status --wait-ready --timeout 5m
+      register: worker_status
+      changed_when: false
+
+    - name: Display worker status
+      ansible.builtin.debug:
+        var: worker_status.stdout
